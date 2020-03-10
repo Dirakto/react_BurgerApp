@@ -12,7 +12,7 @@ const withErrorHandler = (WrappedComponent, axios) => {
             super(props)
             this.reqInterceptor = axios.interceptors.response.use(res => res, error => {
                 this.setState({error: error});
-                return 
+                // return Nie wiem czy mozna usunac
             });
             this.reseInterceptor = axios.interceptors.request.use(req => {
                 this.setState({error: null});
