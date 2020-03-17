@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-
 import axios from '../../axios-orders';
 
 import Aux from '../../hoc/Auxiliary/Auxiliary';
@@ -10,25 +9,18 @@ import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
-import * as actions from '../../store/actions';
+import * as actionCreators from '../../store/actions/index';
 
 class BurgerBuilder extends Component{
 
     state = {
-        purchasing: false,
-        loading: false,
-        error: false
+        purchasing: false
     };
 
     componentDidMount() {
-        // axios.get('/ingredients.json')
-        //     .then( ({data}) => {
-        //         this.setState({ingredients: data});
-        //     })
-        //     .catch(() => {
-        //         this.setState({error: true})
-        //     })
+        this.props.onInitIngredients();
     }
+    
 
     updatePurchaseState(ingredients){
         const sum = Object.keys(ingredients)
@@ -41,7 +33,12 @@ class BurgerBuilder extends Component{
     }
 
     purchaseHandler(){
-        this.setState({purchasing: true});
+        if(this.props.isAuthenticated)
+            this.setState({purchasing: true});
+        else{
+            this.props.onSetAuthRedirectPath('/checkout');
+            this.props.history.push('/auth');
+        }
     }
     
     purchaseCancelHandler = () => {
@@ -49,6 +46,7 @@ class BurgerBuilder extends Component{
     }
 
     purchaseContinueHandler = () => {
+        this.props.onInitPurchase();
         this.props.history.push({
             pathname: '/checkout'
         });
@@ -63,7 +61,7 @@ class BurgerBuilder extends Component{
         }
 
         let orderSummary = null;
-        let burger = this.state.error ? <p>Cannot load ingredients...</p> : <Spinner />;
+        let burger = this.props.error ? <p>Cannot load ingredients...</p> : <Spinner />;
         if(this.props.ings){
             burger = (
                 <Aux>
@@ -74,7 +72,8 @@ class BurgerBuilder extends Component{
                         disabled={disabledInfo}
                         price={this.props.price}
                         purchasable={this.updatePurchaseState(this.props.ings)}
-                        ordered={this.purchaseHandler.bind(this)} />
+                        ordered={this.purchaseHandler.bind(this)}
+                        isAuth={this.props.isAuthenticated} />
                 </Aux>
             );
             orderSummary = <OrderSummary 
@@ -83,9 +82,6 @@ class BurgerBuilder extends Component{
             purchaseContinue={this.purchaseContinueHandler} 
             price={this.props.price} />;
 
-            if(this.state.loading){
-                orderSummary = <Spinner />;
-            }
         }
 
         return (
@@ -94,22 +90,27 @@ class BurgerBuilder extends Component{
                     {orderSummary}
                 </Modal>
                 {burger}
-                </Aux>
+            </Aux>
         );
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapStateToProps = state => {
     return {
-        onIngredientAdded: (name) => dispatch({type: actions.ADD_INGREDIENT, ingredientName: name}),
-        onIngredientRemoved: (name) => dispatch({type: actions.REMOVE_INGREDIENT, ingredientName: name})
+        ings: state.burgerBuilder.ingredients,
+        price: state.burgerBuilder.totalPrice,
+        error: state.burgerBuilder.error,
+        isAuthenticated: state.auth.token !== null
     }
 };
 
-const mapStateToProps = state => {
+const mapDispatchToProps = dispatch => {
     return {
-        ings: state.ingredients,
-        price: state.totalPrice
+        onIngredientAdded: (name) => dispatch(actionCreators.addIngredient(name)),
+        onIngredientRemoved: (name) => dispatch(actionCreators.removeIngredient(name)),
+        onInitIngredients: () => dispatch(actionCreators.initIngredients()),
+        onInitPurchase: () => dispatch(actionCreators.purchaseInit()),
+        onSetAuthRedirectPath: (path) => dispatch(actionCreators.setAuthRedirectPath(path))
     }
 };
 
