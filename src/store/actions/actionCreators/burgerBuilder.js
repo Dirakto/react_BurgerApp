@@ -1,5 +1,4 @@
 import * as actions from '../actions';
-import axios from '../../../axios-orders';
 
 
 export const addIngredient = payload => ({
@@ -19,15 +18,18 @@ export const setIngredients = ingredients => ({
 
 
 export const initIngredients = () => {
-    return dispatch => {
-        axios.get('/ingredients.json')
-            .then( ({data}) => {
-                dispatch(setIngredients(data));
-            })
-            .catch(() => {
-                dispatch(fetchIngredientsFailed());
-            })
+    return {
+        type: actions.INIT_INGREDIENTS
     }
+    // return dispatch => {
+    //     axios.get('/ingredients.json')
+    //         .then( ({data}) => {
+    //             dispatch(setIngredients(data));
+    //         })
+    //         .catch(() => {
+    //             dispatch(fetchIngredientsFailed());
+    //         })
+    // }
 }
 
 export const fetchIngredientsFailed = () => ({

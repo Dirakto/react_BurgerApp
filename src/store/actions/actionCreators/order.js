@@ -1,5 +1,4 @@
 import * as actions from '../actions';
-import axios from '../../../axios-orders';
 
 export const purchaseBurgerSuccess = (id, data) => ({
     type: actions.PURCHASE_BURGER_SUCCESS,
@@ -12,21 +11,26 @@ export const purchaseBurgerFail = error => ({
     error: error
 });
 
-const purchaseBurgerStart = () => ({
+export const purchaseBurgerStart = () => ({
     type: actions.PURCHASE_BURGER_START
 });
 
 export const purchaseBurger = (orderData, token) => {
-    return dispatch => {
-        dispatch(purchaseBurgerStart());
-        axios.post('/orders.json?auth='+token, orderData)
-            .then( ({data}) => {
-                dispatch(purchaseBurgerSuccess(data.name, orderData));
-            })
-            .catch(err => {
-                dispatch(purchaseBurgerFail(err));
-            })
+    return {
+        type: actions.PURCHASE_BURGER,
+        token: token,
+        orderData: orderData
     }
+    // return dispatch => {
+    //     dispatch(purchaseBurgerStart());
+    //     axios.post('/orders.json?auth='+token, orderData)
+    //         .then( ({data}) => {
+    //             dispatch(purchaseBurgerSuccess(data.name, orderData));
+    //         })
+    //         .catch(err => {
+    //             dispatch(purchaseBurgerFail(err));
+    //         })
+    // }
 }
 
 export const purchaseInit = () => ({
@@ -47,22 +51,27 @@ export const fetchOrdersStart = () => ({
 });
 
 export const fetchOrders = (token, userId) => {
-    return dispatch => {
-        dispatch(fetchOrdersStart());
-        const queryParams = '?auth=' + token + '&orderBy="userId"&equalTo="' + userId + '"';
-        axios.get('/orders.json'+ queryParams)
-            .then(({data}) => {
-                const fetchedOrders = [];
-                for(let key in data){
-                    fetchedOrders.push({
-                        ...data[key],
-                        id: key
-                    });
-                }
-                dispatch(fetchOrdersSuccess(fetchedOrders));
-            })
-            .catch(() => {
-                dispatch(fetchOrdersFail());
-            });
+    return {
+        type: actions.FETCH_ORDERS,
+        token: token,
+        userId: userId
     }
+    // return dispatch => {
+        // dispatch(fetchOrdersStart());
+        // const queryParams = '?auth=' + token + '&orderBy="userId"&equalTo="' + userId + '"';
+        // axios.get('/orders.json'+ queryParams)
+        //     .then(({data}) => {
+        //         const fetchedOrders = [];
+        //         for(let key in data){
+        //             fetchedOrders.push({
+        //                 ...data[key],
+        //                 id: key
+        //             });
+        //         }
+        //         dispatch(fetchOrdersSuccess(fetchedOrders));
+        //     })
+        //     .catch(() => {
+        //         dispatch(fetchOrdersFail());
+        //     });
+    // }
 };

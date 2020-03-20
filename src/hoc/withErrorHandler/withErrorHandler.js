@@ -1,29 +1,29 @@
-import React, {Component} from 'react'
+import React, { useState, useEffect } from 'react'
 
 import Aux from '../Auxiliary/Auxiliary';
 import Modal from '../../components/UI/Modal/Modal'
 
 const withErrorHandler = (WrappedComponent, axios) => {
-    return class extends Component{
+    return props => {
         
-        state = {error: null};
+        const [error, setError] = useState(null);
 
-        constructor(props) {
-            super(props)
-            this.reqInterceptor = axios.interceptors.response.use(res => res, error => {
-                this.setState({error: error});
-                // return Nie wiem czy mozna usunac
-            });
-            this.reseInterceptor = axios.interceptors.request.use(req => {
-                this.setState({error: null});
-                return req;
-            });
-        }
 
-        componentWillUnmount(){
-            axios.interceptors.request.eject(this.reqInterceptor);
-            axios.interceptors.response.eject(this.resInterceptor);
-        }
+        const reqInterceptor = axios.interceptors.response.use(res => res, error => {
+            setError(error);
+        });
+        const reseInterceptor = axios.interceptors.request.use(req => {
+            setError(null);
+            return req;
+        });
+        
+
+        useEffect(() => {
+            return () => {
+                axios.interceptors.request.eject(this.reqInterceptor);
+                axios.interceptors.response.eject(this.resInterceptor);
+            }
+        }, []);
         
 
         errorConfirmedHandler = () => {
